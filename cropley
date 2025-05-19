@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+
+from PyPDF2 import PdfReader, PdfWriter
+
+
+def process_page(reader, outdir, page, idx, direction):
+    media_box = page.mediabox
+    if direction == "v":
+        mid_x = (media_box.left + media_box.right) / 2
+        left = page.cropbox
+        left.lower_left = media_box.lower_left
+        left.upper_right = (mid_x, media_box.upper_right[1])
+    elif direction == "h":
+        mid_y = (media_box.top + media_box.bottom) / 2
+        top = page.cropbox
+        top.lower_left = (media_box.lower_left[1], mid_y)
+        top.upper_right = media_box.upper_right
+    else:
+        print("invalid direction (must be h or v)")
+        return -1
+
+    try:
+        file = open("{}/{}.pdf".format(outdir, idx), "xb")
+    except FileExistsError:
+        file = open("{}/{}.pdf".format(outdir, idx), "wb")
+    except Exception as e:
+        print(f"could not open outdir for writing: {e}")
+        return -1
+
+    writer = PdfWriter()
+    writer.add_page(page)
+    writer.write(file)
+    return 0
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("infile", type=str, help="Path to the input PDF file")
+    parser.add_argument("outdir", type=str, help="Directory to save output")
+    parser.add_argument(
+        "start_page",
+        type=int,
+        help="First page number to start cropping from (0 indexed)",
+    )
+    parser.add_argument(
+        "direction", type=str, help="h for cropping horizontal, v for cropping vertical"
+    )
+
+    args = parser.parse_args()
+    reader = PdfReader(args.infile)
+    if not os.path.exists(args.outdir):
+        os.mkdir(args.outdir)
+
+    for idx, page in enumerate(reader.pages[args.start_page :]):
+        if process_page(reader, args.outdir, page, idx, args.direction) < 0:
+            return
+
+
+if __name__ == "__main__":
+    main()
