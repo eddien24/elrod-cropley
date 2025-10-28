@@ -20,6 +20,8 @@
             black
             python312Packages.pypdf2
           ];
+
+          shellHook = "export ELROD=$(realpath cropley)";
         };
       }
     );
