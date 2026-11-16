@@ -18,9 +18,9 @@ def process_page(outdir, page, idx, direction, rotate):
         top = page.cropbox
         top.lower_left = (media_box.lower_left[1], mid_y)
         top.upper_right = media_box.upper_right
-    else:
-        print("invalid direction (must be h or v)")
-        return -1
+    else: 
+        print(f"direction must be either h or v: got {direction}")
+        return -1 
 
     # Apparently O_CREAT and O_WRONLY are mutually exclusive in Python...
     try:
@@ -48,7 +48,11 @@ def main():
         help="First page number to start cropping from (0 indexed)",
     )
     parser.add_argument(
-        "direction", type=str, help="h for cropping horizontal, v for cropping vertical"
+        "-d",
+        "--direction",
+        type=str,
+        help="h for cropping horizontal, v for cropping vertical",
+        default="h",
     )
     parser.add_argument(
         "-r",
