@@ -10,14 +10,18 @@ To use, just clone this repo. Requires Python 3 and
 ## Usage
 
 ```sh
-usage: cropley [-h] infile outdir start_page direction
+usage: cropley [-h] [-s START_PAGE] [-r ROTATE] infile outdir section
 
 positional arguments:
-  infile      Path to the input PDF file
-  outdir      Directory to save output
-  start_page  First page number to start cropping from (0 indexed)
-  direction   h for cropping horizontal, v for cropping vertical
+  infile                Path to the input PDF file
+  outdir                Directory to save output
+  section               Which half of the PDF to save. Options:
+                        top|bottom|left|right
 
 options:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  -s START_PAGE, --start-page START_PAGE
+                        First page number to start cropping from (0 indexed)
+  -r ROTATE, --rotate ROTATE
+                        amount to rotate each page (in degrees, clockwise)
 ```
