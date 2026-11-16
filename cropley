@@ -6,21 +6,31 @@ import os
 from PyPDF2 import PdfReader, PdfWriter
 
 
-def process_page(outdir, page, idx, direction, rotate):
+def process_page(outdir, page, idx, section, rotate):
     media_box = page.mediabox
-    if direction == "v":
+    if section == "left":
         mid_x = (media_box.left + media_box.right) / 2
         left = page.cropbox
         left.lower_left = media_box.lower_left
         left.upper_right = (mid_x, media_box.upper_right[1])
-    elif direction == "h":
+    elif section == "right":
+        mid_x = (media_box.left + media_box.right) / 2
+        right = page.cropbox
+        right.lower_left = (mid_x, media_box.lower_left[1])
+        right.upper_right = media_box.upper_right
+    elif section == "top":
         mid_y = (media_box.top + media_box.bottom) / 2
         top = page.cropbox
         top.lower_left = (media_box.lower_left[1], mid_y)
         top.upper_right = media_box.upper_right
-    else: 
-        print(f"direction must be either h or v: got {direction}")
-        return -1 
+    elif section == "bottom":
+        mid_y = (media_box.top + media_box.bottom) / 2
+        bottom = page.cropbox
+        bottom.lower_left = media_box.lower_left
+        bottom.upper_right = (media_box.upper_right[0], mid_y)
+    else:
+        print(f"section must be top|bottom|left|right; got {section}")
+        return -1
 
     # Apparently O_CREAT and O_WRONLY are mutually exclusive in Python...
     try:
@@ -43,16 +53,16 @@ def main():
     parser.add_argument("infile", type=str, help="Path to the input PDF file")
     parser.add_argument("outdir", type=str, help="Directory to save output")
     parser.add_argument(
-        "start_page",
-        type=int,
-        help="First page number to start cropping from (0 indexed)",
+        "section",
+        type=str,
+        help="Which half of the PDF to save. Options: top|bottom|left|right",
     )
     parser.add_argument(
-        "-d",
-        "--direction",
-        type=str,
-        help="h for cropping horizontal, v for cropping vertical",
-        default="h",
+        "-s",
+        "--start-page",
+        type=int,
+        default=0,
+        help="First page number to start cropping from (0 indexed)",
     )
     parser.add_argument(
         "-r",
@@ -68,7 +78,7 @@ def main():
         os.mkdir(args.outdir)
 
     for idx, page in enumerate(reader.pages[args.start_page :]):
-        if process_page(args.outdir, page, idx, args.direction, args.rotate) < 0:
+        if process_page(args.outdir, page, idx, args.section, args.rotate) < 0:
             return
 
 
